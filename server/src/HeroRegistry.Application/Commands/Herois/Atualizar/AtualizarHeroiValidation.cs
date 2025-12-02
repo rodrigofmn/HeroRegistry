@@ -11,7 +11,7 @@ public class AtualizarHeroiValidation : AbstractValidator<AtualizarHeroiCommand>
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("O Id é obrigatório.");
 
-        RuleFor(x => x.AtualizarHeroiInputDto).ChildRules(dto =>
+        RuleFor(x => x.Heroi).ChildRules(dto =>
         {
             dto.RuleFor(x => x.Nome)
                 .NotEmpty().WithMessage("O nome do herói é obrigatório.")

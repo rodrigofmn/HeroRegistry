@@ -7,7 +7,7 @@ public class CriarHeroiValidation : AbstractValidator<CriarHeroiCommand>
 {
     public CriarHeroiValidation()
     {
-        RuleFor(x => x.CriarHeroiInputDto).ChildRules(dto =>
+        RuleFor(x => x.Heroi).ChildRules(dto =>
         {
             dto.RuleFor(x => x.Nome)
                 .NotEmpty().WithMessage("O nome do herói é obrigatório.")

@@ -51,7 +51,7 @@ namespace HeroRegistry.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Herois");
+                    b.ToTable("Herois", (string)null);
                 });
 
             modelBuilder.Entity("HeroRegistry.Domain.Models.HeroisSuperPoderes.HeroiSuperPoder", b =>
@@ -66,7 +66,7 @@ namespace HeroRegistry.Infrastructure.Migrations
 
                     b.HasIndex("SuperPoderId");
 
-                    b.ToTable("HeroisSuperpoderes");
+                    b.ToTable("HeroisSuperpoderes", (string)null);
                 });
 
             modelBuilder.Entity("HeroRegistry.Domain.Models.SuperPoderes.Poder", b =>
@@ -88,7 +88,7 @@ namespace HeroRegistry.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SuperPoderes");
+                    b.ToTable("SuperPoderes", (string)null);
 
                     b.HasData(
                         new

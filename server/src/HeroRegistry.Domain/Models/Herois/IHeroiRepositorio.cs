@@ -8,4 +8,5 @@ public interface IHeroiRepositorio
     int AtualizarHeroiAsync(Heroi heroi);
     Task SaveChangesAsync();
     void Delete(Heroi heroi);
+    Task<bool> ExisteNomeHeroiIgualAsync(string nomeHeroi);
 }

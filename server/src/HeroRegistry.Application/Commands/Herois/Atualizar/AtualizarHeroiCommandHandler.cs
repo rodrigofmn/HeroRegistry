@@ -17,19 +17,12 @@ public class AtualizarHeroiCommandHandler : IRequestHandler<AtualizarHeroiComman
 
     public async Task<int> Handle(AtualizarHeroiCommand request, CancellationToken cancellationToken)
     {
-        var dto = request.AtualizarHeroiInputDto;
+        if (await _repository.ExisteNomeHeroiIgualAsync(request.Heroi.NomeHeroi))
+            throw new InvalidOperationException("Já existe um herói com esse nome.");
 
-        var heroi = new Heroi(
-            dto.Nome,
-            dto.NomeHeroi,
-            dto.DataNascimento,
-            dto.Altura,
-            dto.Peso
-        );
-
-        _repository.AtualizarHeroiAsync(heroi);
+        _repository.AtualizarHeroiAsync(request.Heroi);
         await _repository.SaveChangesAsync();
 
-        return heroi.Id;
+        return request.Heroi.Id;
     }
 }

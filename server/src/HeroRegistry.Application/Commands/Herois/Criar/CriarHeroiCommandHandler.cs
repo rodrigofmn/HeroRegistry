@@ -15,19 +15,12 @@ public class CriarHeroiCommandHandler : IRequestHandler<CriarHeroiCommand, int>
 
     public async Task<int> Handle(CriarHeroiCommand request, CancellationToken cancellationToken)
     {
-        var dto = request.CriarHeroiInputDto;
+        if (await _repository.ExisteNomeHeroiIgualAsync(request.Heroi.NomeHeroi))
+            throw new InvalidOperationException("Já existe um herói com esse nome.");
 
-        var heroi = new Heroi(
-            dto.Nome,
-            dto.NomeHeroi,
-            dto.DataNascimento,
-            dto.Altura,
-            dto.Peso
-        );
-
-        await _repository.AdicionarHeroiAsync(heroi);
+        await _repository.AdicionarHeroiAsync(request.Heroi);
         await _repository.SaveChangesAsync();
 
-        return heroi.Id;
+        return request.Heroi.Id;
     }
 }

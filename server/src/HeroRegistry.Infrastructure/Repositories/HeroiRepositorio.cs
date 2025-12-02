@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HeroRegistry.Infrastructure.Repositories;
 
-public class HeroRepository(ApplicationDbContext context) : IHeroiRepositorio
+public class HeroRepositorio(ApplicationDbContext context) : IHeroiRepositorio
 {
     private readonly ApplicationDbContext _context = context;
 
     public Task<Heroi?> BuscarHeroiPorIdAsync(int id) =>
-        _context.Herois.FirstOrDefaultAsync(h => h.Id == id);
+        _context.Herois.AsNoTracking().FirstOrDefaultAsync(h => h.Id == id);
 
     public async Task<List<Heroi>> BuscarTodosHeroisAsync(int pagina, int tamanhoPagina, CancellationToken cancellationToken) =>
-        await _context.Herois.Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToListAsync(cancellationToken);
+        await _context.Herois.AsNoTracking().Include(h => h.SuperPoderes).Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToListAsync(cancellationToken);
 
     public async Task AdicionarHeroiAsync(Heroi hero) =>
         await _context.Herois.AddAsync(hero);
@@ -21,7 +21,6 @@ public class HeroRepository(ApplicationDbContext context) : IHeroiRepositorio
     {
         _context.Herois.Update(heroi);
         return heroi.Id;
-
     }
 
     public void Delete(Heroi hero) =>
@@ -29,4 +28,7 @@ public class HeroRepository(ApplicationDbContext context) : IHeroiRepositorio
 
     public async Task SaveChangesAsync() =>
         await _context.SaveChangesAsync();
+
+    public async Task<bool> ExisteNomeHeroiIgualAsync(string nomeHeroi) =>
+        await _context.Herois.AsNoTracking().Where(h => h.NomeHeroi == nomeHeroi).AnyAsync();
 }

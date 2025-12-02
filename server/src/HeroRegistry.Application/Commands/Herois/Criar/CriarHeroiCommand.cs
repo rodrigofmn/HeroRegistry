@@ -1,6 +1,7 @@
 using HeroRegistry.Application.Dtos.Herois;
+using HeroRegistry.Domain.Models.Herois;
 using MediatR;
 
 namespace HeroRegistry.Application.Commands.Herois.Criar;
 
-public record CriarHeroiCommand(CriarHeroiInputDto CriarHeroiInputDto) : IRequest<int>;
+public record CriarHeroiCommand(Heroi Heroi) : IRequest<int>;
