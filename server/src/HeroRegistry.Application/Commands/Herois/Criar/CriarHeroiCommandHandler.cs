@@ -15,7 +15,7 @@ public class CriarHeroiCommandHandler : IRequestHandler<CriarHeroiCommand, int>
 
     public async Task<int> Handle(CriarHeroiCommand request, CancellationToken cancellationToken)
     {
-        if (await _repository.ExisteNomeHeroiIgualAsync(request.Heroi.NomeHeroi))
+        if (await _repository.ExisteNomeHeroiIgualAsync(request.Heroi.NomeHeroi, request.Heroi.Id))
             throw new InvalidOperationException("Já existe um herói com esse nome.");
 
         await _repository.AdicionarHeroiAsync(request.Heroi);

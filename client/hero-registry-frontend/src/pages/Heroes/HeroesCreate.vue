@@ -1,71 +1,281 @@
 <template>
-  <div>
-    <h2>Criar Herói</h2>
+  <div class="create-page">
 
-    <form @submit.prevent="saveHero" class="form">
-      <label>Nome</label>
-      <input v-model="nome" required />
+    <div class="card">
+      <h2 class="title">Criar Herói</h2>
 
-      <label>Nome de Herói</label>
-      <input v-model="nomeHeroi" required />
+      <form @submit.prevent="saveHero" class="form">
 
-      <label>Data de Nascimento</label>
-      <input type="date" v-model="dataNascimento" required />
+        <label>Nome</label>
+        <input v-model="heroi.nome" required />
 
-      <label>Altura (m)</label>
-      <input type="number" v-model="altura" required step="0.01" />
+        <label>Nome de Herói</label>
+        <input v-model="heroi.nomeHeroi" required />
 
-      <label>Peso (kg)</label>
-      <input type="number" v-model="peso" required />
+        <label>Data de Nascimento</label>
+        <input type="date" v-model="heroi.dataNascimento" required />
 
-      <label>Superpoderes</label>
-      <select v-model="superpoderes" multiple required>
-        <option v-for="sp in powers" :key="sp.id" :value="sp.id">
-          {{ sp.descricao }}
-        </option>
-      </select>
+        <div class="inline">
+          <div>
+            <label class="input-heroi">Altura (m)</label>
+            <input type="number" v-model="heroi.altura" required step="0.01" />
+          </div>
 
-      <button type="submit">Salvar</button>
-    </form>
+          <div>
+            <label class="input-heroi">Peso (kg)</label>
+            <input type="number" v-model="heroi.peso" required />
+          </div>
+        </div>
+
+        <label>Superpoderes</label>
+        <div class="multi-select-wrapper" @click="open = !open">
+        
+          <div class="selected-tags">
+            <span v-if="superPoderesIds.length === 0" class="placeholder">
+              Selecione superpoderes...
+            </span>
+          
+            <div
+              v-for="sp in selectedPowers"
+              :key="sp.id"
+              class="tag"
+            >
+              {{ sp.superPoder }}
+              <span class="remove" @click.stop="removePower(sp.id)">×</span>
+            </div>
+          </div>
+        
+          <div v-if="open" class="dropdown">
+            <div
+              class="option"
+              v-for="sp in powers"
+              :key="sp.id"
+              @click.stop="togglePower(sp.id)"
+              :class="{ selected: superPoderesIds.includes(sp.id) }"
+            >
+              {{ sp.superPoder }}
+            </div>
+          </div>
+        
+        </div>
+        <button type="submit" class="button">Salvar</button>
+      </form>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { createHero, getSuperpowers } from "../../services/heroesService";
+import { ref, onMounted,computed } from "vue";
+import { createHero as criarHeroi, getSuperpowers } from "../../services/heroesService";
+import type { CriarHeroiExportDto } from "../../models/CriarHeroiExportDto";
+const heroi = ref<CriarHeroiExportDto>(new Object() as CriarHeroiExportDto);
+const superPoderesIds = ref<number[]>([]);
 
-const nome = ref("");
-const nomeHeroi = ref("");
-const dataNascimento = ref("");
-const altura = ref(0);
-const peso = ref(0);
-const superpoderes = ref<number[]>([]);
-
-const powers = ref<{ id: number; descricao: string }[]>([]);
+const powers = ref<{ id: number; superPoder: string }[]>([]);
+const open = ref(false);
 
 onMounted(async () => {
   powers.value = await getSuperpowers();
 });
 
-async function saveHero() {
-  await createHero({
-    nome: nome.value,
-    nomeHeroi: nomeHeroi.value,
-    dataNascimento: dataNascimento.value,
-    altura: altura.value,
-    peso: peso.value,
-    superpoderes: superpoderes.value,
-  });
+const selectedPowers = computed(() =>
+  powers.value.filter(p => superPoderesIds.value.includes(p.id))
+);
 
-  alert("Herói criado com sucesso!");
+function togglePower(id: number) {
+  if (superPoderesIds.value.includes(id)) {
+    superPoderesIds.value = superPoderesIds.value.filter(x => x !== id);
+  } else {
+    superPoderesIds.value.push(id);
+  }
+}
+
+function removePower(id: number) {
+  superPoderesIds.value = superPoderesIds.value.filter(x => x !== id);
+}
+
+async function saveHero() {
+  heroi.value.superPoderesIds = superPoderesIds.value;
+  await criarHeroi(heroi.value)
+  .then(() => {
+    alert("Herói criado com sucesso!");
+    heroi.value = new Object() as CriarHeroiExportDto;
+  })
+  .catch((error) => {
+    alert(error?.response?.data ?? "Erro ao criar herói.");
+  });
 }
 </script>
 
 <style scoped>
+.create-page {
+  display: flex;
+  justify-content: center;
+}
+
+.card {
+  background: #ffffff;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: #0f172a;
+}
+
 .form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 400px;
+  gap: 18px;
 }
+
+input,
+select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+  background: #f8fafc;
+  transition: 0.2s;
+}
+
+input:focus,
+select:focus {
+  border-color: #3282b8;
+  box-shadow: 0 0 0 3px rgba(50, 130, 184, 0.25);
+  background: #fff;
+  outline: none;
+}
+
+label {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.inline {
+  display: flex;
+  gap: 16px;
+}
+
+.inline > div {
+  flex: 1;
+}
+
+.multi-select-wrapper {
+  position: relative;
+  width: 100%;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.multi-select-wrapper:hover {
+  border-color: #1c768f;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.placeholder {
+  color: #94a3b8;
+}
+
+.tag {
+  background: #1c768f;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.remove {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  margin-top: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  z-index: 5;
+}
+
+.option {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: 0.15s;
+}
+
+.option:hover {
+  background: #e2e8f0;
+}
+
+.option.selected {
+  background: #1c768f;
+  color: white;
+}
+
+.button {
+  margin-top: 10px;
+  padding: 0.9rem 2rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #1C768F, #2D93AD);
+  color: white;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+
+  box-shadow:
+    0 4px 10px rgba(28, 118, 143, 0.4),
+    0 0 10px rgba(45, 147, 173, 0.3);
+
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #2289A3, #37AACC);
+}
+
+.button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+}
+
+.input-heroi {
+  margin-right: 1rem;
+}
+
 </style>

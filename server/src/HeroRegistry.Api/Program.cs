@@ -46,6 +46,17 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials()
+              .WithOrigins("http://localhost:5173");
+    });
+});
+
 builder.Services.AddValidatorsFromAssembly(typeof(CriarHeroiValidation).Assembly);
 builder.Services.AddValidatorsFromAssembly(typeof(AtualizarHeroiValidation).Assembly);
 
@@ -66,10 +77,18 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.MapControllers();
 app.UseHttpsRedirection();
 app.UseDeveloperExceptionPage();
+
+app.UseCors("AllowFrontend");
 
 app.Run();

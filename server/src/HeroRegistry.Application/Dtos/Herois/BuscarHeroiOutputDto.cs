@@ -1,9 +1,8 @@
-using HeroRegistry.Domain.Models.HeroisSuperPoderes;
-
 namespace HeroRegistry.Application.Dtos.Herois;
 
-public class AtualizarHeroiInputDto
+public class BuscarHeroiOutputDto
 {
+    public int Id { get; set; }
     public string Nome { get; set; } = "";
     public string NomeHeroi { get; set; } = "";
     public DateTime? DataNascimento { get; set; }

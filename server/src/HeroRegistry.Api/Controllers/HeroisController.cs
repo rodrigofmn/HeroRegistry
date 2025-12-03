@@ -1,6 +1,7 @@
 using AutoMapper;
 using HeroRegistry.Application.Commands.Herois.Atualizar;
 using HeroRegistry.Application.Commands.Herois.BuscaPaginada;
+using HeroRegistry.Application.Commands.Herois.BuscarPorId;
 using HeroRegistry.Application.Commands.Herois.Criar;
 using HeroRegistry.Application.Commands.Herois.Remover;
 using HeroRegistry.Application.Dtos.Herois;
@@ -41,7 +42,7 @@ public class HeroisController : ControllerBase
     /// <returns>Lista paginada de heróis.</returns>
     /// <response code="200">Retorna a lista de heróis.</response>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<List<Heroi>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<Heroi>), StatusCodes.Status200OK)]
     public async Task<IActionResult> BuscarTodosHeroisPaginados(
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 10)
@@ -49,6 +50,16 @@ public class HeroisController : ControllerBase
         var command = new BuscarHeroisPaginadosCommand(pagina, tamanhoPagina);
         var heroes = await _mediator.Send(command);
         return Ok(heroes);
+    }
+
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(BuscarHeroiOutputDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> BuscarTodosHeroisPaginados(int id)
+    {
+        var command = new BuscarPorIdHeroiCommand(id);
+        var heroes = await _mediator.Send(command);
+        var result = _mapper.Map<BuscarHeroiOutputDto>(heroes);
+        return Ok(result);
     }
 
     /// <summary>
@@ -65,9 +76,15 @@ public class HeroisController : ControllerBase
     {
         var heroi = _mapper.Map<Heroi>(heroiDto);
 
-        var command = new CriarHeroiCommand(heroi);
-        var heroId = await _mediator.Send(command);
-        return CreatedAtAction(nameof(BuscarTodosHeroisPaginados), new { id = heroId }, heroId);
+        try
+        {
+            var result = await _mediator.Send(new CriarHeroiCommand(heroi));
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -90,10 +107,15 @@ public class HeroisController : ControllerBase
 
         var heroi = _mapper.Map<Heroi>(heroiDto);
 
-        var command = new AtualizarHeroiCommand(id, heroi);
-        var heroiId = await _mediator.Send(command);
-
-        return Ok(heroiId);
+        try
+        {
+            var result = await _mediator.Send(new AtualizarHeroiCommand(id, heroi));
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     /// <summary>
@@ -116,6 +138,6 @@ public class HeroisController : ControllerBase
         var command = new RemoverHeroiCommand(id);
         var hero = await _mediator.Send(command);
 
-        return Ok(hero);
+        return Ok(id);
     }
 }
