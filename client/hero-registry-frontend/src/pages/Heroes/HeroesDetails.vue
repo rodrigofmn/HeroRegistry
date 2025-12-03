@@ -3,7 +3,7 @@
     <div class="card">
       <h2 class="title">Editar Herói</h2>
 
-      <form @submit.prevent="saveHero" class="form">
+      <form @submit.prevent="salvarHeroi" class="form">
         <label>Nome</label>
         <input v-model="heroi.nome" required />
 
@@ -27,29 +27,29 @@
 
         <label>Superpoderes</label>
 
-        <div class="multi-select-wrapper" @click="toggleSelect">
+        <div class="multi-select-wrapper" @click="alternarSelecao">
           <div class="selected-tags">
-            <span v-if="selectedPowers.length === 0" class="placeholder">
+            <span v-if="poderSelecionado.length === 0" class="placeholder">
               Selecione superpoderes...
             </span>
 
             <div
-              v-for="sp in selectedPowers"
+              v-for="sp in poderSelecionado"
               :key="sp.id"
               class="tag"
             >
               {{ sp.superPoder }}
-              <span class="remove" @click.stop="removePower(sp.id)">×</span>
+              <span class="remove" @click.stop="removerPoder(sp.id)">×</span>
             </div>
           </div>
 
-          <div v-if="open" class="dropdown">
+          <div v-if="abrir" class="dropdown">
             <div
               class="option"
-              v-for="sp in filteredPowers"
+              v-for="sp in poderesFiltrados"
               :key="sp.id"
-              @click.stop="togglePower(sp.id)"
-              :class="{ selected: isPowerSelected(sp.id) }"
+              @click.stop="alternarPoder(sp.id)"
+              :class="{ selected: poderEstaSelecionado(sp.id) }"
             >
               {{ sp.superPoder }}
             </div>
@@ -66,8 +66,8 @@
 import { ref, onMounted, computed, nextTick } from "vue";
 import {
   atualizarHeroi,
-  getHeroById,
-  getSuperpowers
+  buscarHeroiPorId,
+  buscarSuperPoderes
 } from "../../services/heroesService";
 
 import type { CriarHeroiExportDto } from "../../models/CriarHeroiExportDto";
@@ -86,23 +86,23 @@ const heroi = ref<CriarHeroiExportDto>({
   superPoderesIds: []
 });
 
-const allPowers = ref<{ id: number; superPoder: string }[]>([]);
-const open = ref(false);
+const todosPoderes = ref<{ id: number; superPoder: string }[]>([]);
+const abrir = ref(false);
 
 onMounted(async () => {
   try {
-    const [powersResponse, heroResponse] = await Promise.all([
-      getSuperpowers(),
-      getHeroById(heroiId)
+    const [poderesResponse, heroiResponse] = await Promise.all([
+      buscarSuperPoderes(),
+      buscarHeroiPorId(heroiId)
     ]);
 
-    const validPowers = powersResponse.filter((p: any) => {
-      const hasName = p.superPoder && p.superPoder.trim() !== "";
-      const hasDescription = p.superPoder && p.superPoder.trim() !== "";
-      return hasName || hasDescription;
+    const poderesValidos = poderesResponse.filter((p: any) => {
+      const possuiNome = p.superPoder && p.superPoder.trim() !== "";
+      const possuiDescricao = p.superPoder && p.superPoder.trim() !== "";
+      return possuiNome || possuiDescricao;
     });
 
-    allPowers.value = validPowers.map((p: any) => {
+    todosPoderes.value = poderesValidos.map((p: any) => {
       const superPoder = p.superPoder && p.superPoder.trim() !== "" 
         ? p.superPoder 
         : (p.superPoder && p.superPoder.trim() !== "" ? p.superPoder : "Sem nome");
@@ -115,24 +115,24 @@ onMounted(async () => {
 
     let superPoderesIds: number[] = [];
     
-    if (heroResponse.superPoderesIds && Array.isArray(heroResponse.superPoderesIds)) {
-      superPoderesIds = heroResponse.superPoderesIds;
+    if (heroiResponse.superPoderesIds && Array.isArray(heroiResponse.superPoderesIds)) {
+      superPoderesIds = heroiResponse.superPoderesIds;
     }
 
-    const validPowerIds = allPowers.value.map(p => p.id);
-    const validSuperPoderesIds = superPoderesIds.filter(id => 
-      validPowerIds.includes(id)
+    const poderesIdsValidos = todosPoderes.value.map(p => p.id);
+    const validaSuperPoderesIds = superPoderesIds.filter(id => 
+      poderesIdsValidos.includes(id)
     );
 
     heroi.value = {
-      nome: heroResponse.nome || "",
-      nomeHeroi: heroResponse.nomeHeroi || "",
-      altura: heroResponse.altura || 0,
-      peso: heroResponse.peso || 0,
-      dataNascimento: heroResponse.dataNascimento 
-        ? heroResponse.dataNascimento.split("T")[0]
+      nome: heroiResponse.nome || "",
+      nomeHeroi: heroiResponse.nomeHeroi || "",
+      altura: heroiResponse.altura || 0,
+      peso: heroiResponse.peso || 0,
+      dataNascimento: heroiResponse.dataNascimento 
+        ? heroiResponse.dataNascimento.split("T")[0]
         : new Date().toISOString().split("T")[0],
-      superPoderesIds: validSuperPoderesIds.map(id => Number(id))
+      superPoderesIds: validaSuperPoderesIds.map(id => Number(id))
     };
 
     await nextTick();
@@ -141,33 +141,33 @@ onMounted(async () => {
   }
 });
 
-const filteredPowers = computed(() => {
-  return allPowers.value.filter(power => 
+const poderesFiltrados = computed(() => {
+  return todosPoderes.value.filter(power => 
     power.superPoder !== "Sem nome" && 
     power.superPoder.trim() !== ""
   );
 });
 
 onMounted(() => {
-  window.addEventListener("click", () => (open.value = false));
+  window.addEventListener("click", () => (abrir.value = false));
 });
 
-function toggleSelect(e: MouseEvent) {
+function alternarSelecao(e: MouseEvent) {
   e.stopPropagation();
-  open.value = !open.value;
+  abrir.value = !abrir.value;
 }
 
-const selectedPowers = computed(() => {
-  return allPowers.value.filter(p => 
+const poderSelecionado = computed(() => {
+  return todosPoderes.value.filter(p => 
     heroi.value.superPoderesIds.includes(p.id)
   );
 });
 
-function isPowerSelected(id: number) {
+function poderEstaSelecionado(id: number) {
   return heroi.value.superPoderesIds.includes(id);
 }
 
-function togglePower(id: number) {
+function alternarPoder(id: number) {
   const index = heroi.value.superPoderesIds.indexOf(id);
   if (index > -1) {
     heroi.value.superPoderesIds.splice(index, 1);
@@ -177,18 +177,20 @@ function togglePower(id: number) {
   heroi.value.superPoderesIds = [...heroi.value.superPoderesIds];
 }
 
-function removePower(id: number) {
+function removerPoder(id: number) {
   heroi.value.superPoderesIds = heroi.value.superPoderesIds.filter(x => x !== id);
 }
 
-async function saveHero() {
-  try {
-    await atualizarHeroi(heroiId, heroi.value);
-    alert("Herói atualizado com sucesso!");
+async function salvarHeroi() {
+  await atualizarHeroi(heroiId, heroi.value)
+  .then(() => {
+    alert("Herói criado com sucesso!");
     router.push("/heroes");
-  } catch (error) {
-    alert("Erro ao salvar herói.");
-  }
+    heroi.value = new Object() as CriarHeroiExportDto;
+  })
+  .catch((error) => {
+    alert(error?.response?.data ?? "Erro ao criar herói.");
+  });
 }
 </script>
 

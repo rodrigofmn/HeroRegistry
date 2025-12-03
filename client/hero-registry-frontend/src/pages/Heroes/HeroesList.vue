@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { deletarHeroi, getHeroes } from "../../services/heroesService";
+import { deletarHeroi, buscarHerois } from "../../services/heroesService";
 import { useRouter } from "vue-router";
 
 interface Heroi {
@@ -50,7 +50,7 @@ const loading = ref(true);
 const router = useRouter();
 
 onMounted(async () => {
-  heroes.value = await getHeroes();
+  heroes.value = await buscarHerois();
   loading.value = false;
 });
 

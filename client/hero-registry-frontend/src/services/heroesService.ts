@@ -1,22 +1,22 @@
 import type { CriarHeroiExportDto } from "../models/CriarHeroiExportDto";
 import api from "./api";
 
-export async function getHeroes() {
+export async function buscarHerois() {
   const res = await api.get("/herois");
   return res.data;
 }
 
-export async function getHeroById(id: number) {
+export async function buscarHeroiPorId(id: number) {
   const res = await api.get(`/herois/${id}`);
   return res.data;
 }
 
-export async function createHero(heroi: CriarHeroiExportDto) {
+export async function criarHeroi(heroi: CriarHeroiExportDto) {
   const res = await api.post("/herois", heroi);
   return res.data;
 }
 
-export async function getSuperpowers() {
+export async function buscarSuperPoderes() {
   const res = await api.get("/superpoderes");
   return res.data;
 }

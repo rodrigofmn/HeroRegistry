@@ -4,7 +4,7 @@
     <div class="card">
       <h2 class="title">Criar Herói</h2>
 
-      <form @submit.prevent="saveHero" class="form">
+      <form @submit.prevent="salvarHeroi" class="form">
 
         <label>Nome</label>
         <input v-model="heroi.nome" required />
@@ -28,7 +28,7 @@
         </div>
 
         <label>Superpoderes</label>
-        <div class="multi-select-wrapper" @click="open = !open">
+        <div class="multi-select-wrapper" @click="abrir = !abrir">
         
           <div class="selected-tags">
             <span v-if="superPoderesIds.length === 0" class="placeholder">
@@ -36,21 +36,21 @@
             </span>
           
             <div
-              v-for="sp in selectedPowers"
+              v-for="sp in poderSelecionado"
               :key="sp.id"
               class="tag"
             >
               {{ sp.superPoder }}
-              <span class="remove" @click.stop="removePower(sp.id)">×</span>
+              <span class="remove" @click.stop="removerPoder(sp.id)">×</span>
             </div>
           </div>
         
-          <div v-if="open" class="dropdown">
+          <div v-if="abrir" class="dropdown">
             <div
               class="option"
-              v-for="sp in powers"
+              v-for="sp in poder"
               :key="sp.id"
-              @click.stop="togglePower(sp.id)"
+              @click.stop="alternarPoder(sp.id)"
               :class="{ selected: superPoderesIds.includes(sp.id) }"
             >
               {{ sp.superPoder }}
@@ -67,23 +67,23 @@
 
 <script setup lang="ts">
 import { ref, onMounted,computed } from "vue";
-import { createHero as criarHeroi, getSuperpowers } from "../../services/heroesService";
+import { criarHeroi, buscarSuperPoderes } from "../../services/heroesService";
 import type { CriarHeroiExportDto } from "../../models/CriarHeroiExportDto";
 const heroi = ref<CriarHeroiExportDto>(new Object() as CriarHeroiExportDto);
 const superPoderesIds = ref<number[]>([]);
 
-const powers = ref<{ id: number; superPoder: string }[]>([]);
-const open = ref(false);
+const poder = ref<{ id: number; superPoder: string }[]>([]);
+const abrir = ref(false);
 
 onMounted(async () => {
-  powers.value = await getSuperpowers();
+  poder.value = await buscarSuperPoderes();
 });
 
-const selectedPowers = computed(() =>
-  powers.value.filter(p => superPoderesIds.value.includes(p.id))
+const poderSelecionado = computed(() =>
+  poder.value.filter(p => superPoderesIds.value.includes(p.id))
 );
 
-function togglePower(id: number) {
+function alternarPoder(id: number) {
   if (superPoderesIds.value.includes(id)) {
     superPoderesIds.value = superPoderesIds.value.filter(x => x !== id);
   } else {
@@ -91,11 +91,11 @@ function togglePower(id: number) {
   }
 }
 
-function removePower(id: number) {
+function removerPoder(id: number) {
   superPoderesIds.value = superPoderesIds.value.filter(x => x !== id);
 }
 
-async function saveHero() {
+async function salvarHeroi() {
   heroi.value.superPoderesIds = superPoderesIds.value;
   await criarHeroi(heroi.value)
   .then(() => {
