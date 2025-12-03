@@ -136,7 +136,7 @@ public class HeroisController : ControllerBase
             return BadRequest("Id inválido");
 
         var command = new RemoverHeroiCommand(id);
-        var hero = await _mediator.Send(command);
+        await _mediator.Send(command);
 
         return Ok(id);
     }
