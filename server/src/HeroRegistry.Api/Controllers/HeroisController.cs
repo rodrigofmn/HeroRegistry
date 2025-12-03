@@ -17,16 +17,10 @@ namespace HeroRegistry.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [ApiExplorerSettings(GroupName = "v1")]
-public class HeroisController : ControllerBase
+public class HeroisController(IMediator mediator, IMapper mapper) : ControllerBase
 {
-    private readonly IMediator _mediator;
-    private readonly IMapper _mapper;
-
-    public HeroisController(IMediator mediator, IMapper mapper)
-    {
-        _mediator = mediator;
-        _mapper = mapper;
-    }
+    private readonly IMediator _mediator = mediator;
+    private readonly IMapper _mapper = mapper;
 
     /// <summary>
     /// Busca todos os heróis do sistema com paginação.
@@ -34,24 +28,34 @@ public class HeroisController : ControllerBase
     /// <remarks>
     /// Exemplo de requisição:
     ///
-    ///     GET /api/herois?pagina=1&amp;tamanhoPagina=10
+    ///     GET /api/herois
     ///
     /// </remarks>
-    /// <param name="pagina">Número da página (padrão: 1).</param>
-    /// <param name="tamanhoPagina">Quantidade por página (padrão: 10).</param>
-    /// <returns>Lista paginada de heróis.</returns>
+    /// <returns>Lista de heróis.</returns>
     /// <response code="200">Retorna a lista de heróis.</response>
     [HttpGet]
     [ProducesResponseType(typeof(List<Heroi>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> BuscarTodosHeroisPaginados(
-        [FromQuery] int pagina = 1,
-        [FromQuery] int tamanhoPagina = 10)
+    public async Task<IActionResult> BuscarTodosHeroisPaginados()
     {
-        var command = new BuscarHeroisPaginadosCommand(pagina, tamanhoPagina);
+        var command = new BuscarHeroisPaginadosCommand();
         var heroes = await _mediator.Send(command);
         return Ok(heroes);
     }
 
+    /// <summary>
+    /// Busca um herói específico pelo seu ID.
+    /// </summary>
+    /// <remarks>
+    /// Exemplo de requisição:
+    ///
+    ///     GET /api/herois/1
+    ///
+    /// Onde "1" é o ID do herói que se deseja buscar.
+    /// </remarks>
+    /// <param name="id">ID do herói.</param>
+    /// <returns>Objeto do herói correspondente ao ID informado.</returns>
+    /// <response code="200">Retorna os dados do herói.</response>
+    /// <response code="404">Caso nenhum herói seja encontrado com o ID informado.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(BuscarHeroiOutputDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> BuscarTodosHeroisPaginados(int id)
