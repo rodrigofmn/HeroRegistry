@@ -62,6 +62,8 @@ public class HeroisController(IMediator mediator, IMapper mapper) : ControllerBa
     {
         var command = new BuscarPorIdHeroiCommand(id);
         var heroes = await _mediator.Send(command);
+        if (heroes == null)
+            return NotFound();
         var result = _mapper.Map<BuscarHeroiOutputDto>(heroes);
         return Ok(result);
     }
@@ -139,9 +141,14 @@ public class HeroisController(IMediator mediator, IMapper mapper) : ControllerBa
         if (id <= 0)
             return BadRequest("Id inválido");
 
-        var command = new RemoverHeroiCommand(id);
-        await _mediator.Send(command);
-
-        return Ok(id);
+        try
+        {
+            var result = await _mediator.Send(new RemoverHeroiCommand(id));
+            return Ok(id);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

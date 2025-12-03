@@ -17,7 +17,7 @@ public class RemoverHeroiCommandHandler : IRequestHandler<RemoverHeroiCommand, U
     public async Task<Unit> Handle(RemoverHeroiCommand request, CancellationToken cancellationToken)
     {
         var hero = await _repository.BuscarHeroiPorIdAsync(request.Id)
-                   ?? throw new Exception("Heroi não encontrado");
+                   ?? throw new InvalidOperationException("Heroi não encontrado");
 
         _repository.Delete(hero);
         await _repository.SaveChangesAsync();
