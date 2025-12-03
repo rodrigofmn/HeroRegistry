@@ -45,7 +45,7 @@ namespace HeroRegistry.Tests.Controllers
             _mediatorMock.Send(Arg.Any<BuscarHeroisPaginadosCommand>(), Arg.Any<CancellationToken>())
                          .Returns(Task.FromResult(heroes));
 
-            var result = await _controller.BuscarTodosHeroisPaginados(1, 10);
+            var result = await _controller.BuscarTodosHeroisPaginados();
 
             var okResult = result as OkObjectResult;
             okResult.Should().NotBeNull();
