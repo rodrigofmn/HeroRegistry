@@ -257,7 +257,6 @@ label {
 
 .multi-select-wrapper {
   position: relative;
-  width: 100%;
   background: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
