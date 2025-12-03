@@ -16,6 +16,6 @@ public class BuscarHeroisPaginadosCommandHandler : IRequestHandler<BuscarHeroisP
     public async Task<List<Heroi>> Handle(BuscarHeroisPaginadosCommand request, CancellationToken cancellationToken)
     {
 
-        return await _repository.BuscarTodosHeroisAsync(request.Pagina, request.TamanhoPagina, cancellationToken);
+        return await _repository.BuscarTodosHeroisAsync();
     }
 }

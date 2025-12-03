@@ -16,17 +16,17 @@ public class HeroRepositorio(ApplicationDbContext context) : IHeroiRepositorio
                 .ThenInclude(s => s.SuperPoder)
                 .FirstOrDefaultAsync(h => h.Id == id);
 
-    public async Task<List<Heroi>> BuscarTodosHeroisAsync(int pagina, int tamanhoPagina, CancellationToken cancellationToken) =>
-        await _context.Herois.AsNoTracking().Include(h => h.SuperPoderes).Skip((pagina - 1) * tamanhoPagina).Take(tamanhoPagina).ToListAsync(cancellationToken);
+    public async Task<List<Heroi>> BuscarTodosHeroisAsync() =>
+        await _context.Herois.AsNoTracking().Include(h => h.SuperPoderes).ToListAsync();
 
     public async Task AdicionarHeroiAsync(Heroi hero) =>
         await _context.Herois.AddAsync(hero);
 
-    public async Task<int> AtualizarHeroiAsync(Heroi heroi)
+    public async Task<int> AtualizarHeroiAsync(Heroi heroi, int heroiId)
     {
         var heroiExistente = await _context.Herois
             .Include(h => h.SuperPoderes)
-            .FirstOrDefaultAsync(h => h.Id == heroi.Id) ?? throw new Exception("Herói não encontrado");
+            .FirstOrDefaultAsync(h => h.Id == heroiId) ?? throw new Exception("Herói não encontrado");
 
         heroiExistente.Nome = heroi.Nome;
         heroiExistente.NomeHeroi = heroi.NomeHeroi;
